@@ -1,0 +1,27 @@
+{
+	"version": "0.2",
+	"language": "en,pl",
+	"useGitignore": true,
+	"dictionaries": [
+		"pl_pl",
+		"softwareTerms",
+		"node",
+		"typescript",
+		"html"
+	],
+	"ignorePaths": [
+		"node_modules",
+		".next",
+		"dist",
+		"build",
+		"coverage",
+		".git",
+		"pnpm-lock.yaml",
+		"package-lock.json",
+		"yarn.lock",
+		"public/**",
+		".turbo/**"
+	],
+	"words": ["cmdk", "Embla", "logomark", "nums", "shadcn", "vaul"],
+	"files": ["**/*.{ts,tsx,js,jsx,md,json,css}"]
+}

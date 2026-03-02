@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    biome:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: pnpm lint --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+    typecheck:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx}"
+      run: pnpm typecheck
+    cspell:
+      run: pnpm cspell --no-progress {staged_files}
