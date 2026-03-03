@@ -2,11 +2,13 @@
 
 import { useCallback, useRef } from "react";
 import { useWorkspace } from "@/context/workspace-context";
-import type { Message } from "@/types/workspace";
+import type { Message, WorkspaceVariant } from "@/types/workspace";
 
 function generateId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
+
+const INTEGRATED_AI_API = "/api/integrated-ai";
 
 export function useAIStream() {
     const {
@@ -30,24 +32,32 @@ export function useAIStream() {
     }, []);
 
     const sendMessage = useCallback(
-        async (userPrompt: string) => {
+        async ({
+            userPrompt,
+            workspaceVariant: variant,
+        }: {
+            userPrompt: string;
+            workspaceVariant: WorkspaceVariant;
+        }) => {
             const trimmedPrompt = userPrompt.trim();
             if (!trimmedPrompt || isStreaming) return;
 
             const userMessage: Message = {
                 id: generateId(),
-                role: "user",
+                role: "USER",
                 content: trimmedPrompt,
-                status: "done",
+                status: "UNKNOWN",
+                workspaceVariant: variant,
             };
             addMessage(userMessage);
 
             const assistantId = generateId();
             const assistantMessage: Message = {
                 id: assistantId,
-                role: "assistant",
+                role: "ASSISTANT",
                 content: "",
-                status: "streaming",
+                status: "STREAMING",
+                workspaceVariant: variant,
             };
             addMessage(assistantMessage);
             setStreaming(true);
@@ -57,13 +67,14 @@ export function useAIStream() {
 
             let content = "";
             try {
-                const res = await fetch("/api/ai", {
+                const res = await fetch(INTEGRATED_AI_API, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         document,
                         selectedText: selectedText || undefined,
                         userPrompt: trimmedPrompt,
+                        workspaceVariant: variant,
                     }),
                     signal: controller.signal,
                 });
@@ -74,7 +85,7 @@ export function useAIStream() {
                         .catch(() => "Unknown error");
                     updateMessage(assistantId, {
                         content: `Error: ${res.status} — ${errText}`,
-                        status: "error",
+                        status: "ERROR",
                     });
                     return;
                 }
@@ -84,16 +95,15 @@ export function useAIStream() {
 
                 while (true) {
                     const { done, value } = await reader.read();
-
                     if (done) break;
                     content += decoder.decode(value, { stream: true });
                     updateMessage(assistantId, {
                         content,
-                        status: "streaming",
+                        status: "STREAMING",
                     });
                 }
 
-                updateMessage(assistantId, { content, status: "done" });
+                updateMessage(assistantId, { content, status: "DONE" });
             } catch (err) {
                 const isAbort =
                     err instanceof Error && err.name === "AbortError";
@@ -101,7 +111,7 @@ export function useAIStream() {
                     content: isAbort
                         ? content || "Generation stopped."
                         : `Error: ${err instanceof Error ? err.message : String(err)}`,
-                    status: isAbort ? "stopped" : "error",
+                    status: isAbort ? "STOPPED" : "ERROR",
                 });
             } finally {
                 abortControllerRef.current = null;
@@ -119,13 +129,23 @@ export function useAIStream() {
     );
 
     /** Re-run last user message and replace last assistant reply */
-    const regenerate = useCallback(() => {
-        if (messages.length < 2 || isStreaming) return;
-        const lastUser = messages[messages.length - 2];
-        if (lastUser.role !== "user") return;
-        removeLastUserAndAssistant();
-        sendMessage(lastUser.content);
-    }, [messages, isStreaming, removeLastUserAndAssistant, sendMessage]);
+    const regenerate = useCallback(
+        ({
+            workspaceVariant: variant,
+        }: {
+            workspaceVariant: WorkspaceVariant;
+        }) => {
+            if (messages.length < 2 || isStreaming) return;
+            const lastUser = messages[messages.length - 2];
+            if (lastUser.role !== "USER") return;
+            removeLastUserAndAssistant();
+            sendMessage({
+                userPrompt: lastUser.content,
+                workspaceVariant: variant,
+            });
+        },
+        [messages, isStreaming, removeLastUserAndAssistant, sendMessage],
+    );
 
     return {
         sendMessage,
@@ -135,6 +155,6 @@ export function useAIStream() {
         canRegenerate:
             !isStreaming &&
             messages.length >= 2 &&
-            messages[messages.length - 1]?.role === "assistant",
+            messages[messages.length - 1]?.role === "ASSISTANT",
     };
 }

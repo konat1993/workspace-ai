@@ -16,38 +16,11 @@ export default function Home() {
                 </p>
             </div>
             <div className="flex gap-4 flex-col">
-                <Link href="/simulated-ai">
-                    <Card className="min-w-3xs p-4 hover:scale-105 hover:bg-accent transition-all">
-                        <div className="flex gap-6 items-center justify-between">
-                            <div className="flex flex-col gap-2">
-                                <CardTitle>Simulated AI Workspace</CardTitle>
-                                <CardDescription>
-                                    No LLM API calls, only logic with static
-                                    response
-                                </CardDescription>
-                            </div>
-                            <ArrowRightCircle className="size-6" />
-                        </div>
-                    </Card>
-                </Link>
-                <Link href="/low-level-ai">
+                <Link href="/integrated-ai">
                     <Card className="min-w-3xs p-4 hover:scale-105 hover:bg-accent transition-all">
                         <div className="flex gap-2 items-center justify-between">
                             <div className="flex flex-col gap-2">
-                                <CardTitle>Using AI low level Apis</CardTitle>
-                                <CardDescription>
-                                    E.g. OpenAI, Anthropic, etc.
-                                </CardDescription>
-                            </div>
-                            <ArrowRightCircle className="size-6" />
-                        </div>
-                    </Card>
-                </Link>
-                <Link href="/ai-sdk">
-                    <Card className="min-w-3xs p-4 hover:scale-105 hover:bg-accent transition-all">
-                        <div className="flex gap-2 items-center justify-between">
-                            <div className="flex flex-col gap-2">
-                                <CardTitle>Using AI SDKs</CardTitle>
+                                <CardTitle>Using AI integrated API</CardTitle>
                                 <CardDescription>
                                     E.g. OpenAI, Anthropic, etc.
                                 </CardDescription>

@@ -12,16 +12,49 @@
 	"ignorePaths": [
 		"node_modules",
 		".next",
+		"out",
 		"dist",
 		"build",
 		"coverage",
 		".git",
+		".cursor",
+		".vercel",
+		".turbo/**",
 		"pnpm-lock.yaml",
 		"package-lock.json",
 		"yarn.lock",
+		"bun.lock",
 		"public/**",
-		".turbo/**"
+		"src/generated/**",
+		"prisma/migrations/**",
+		".env",
+		".env.*",
+		"*.tsbuildinfo",
+		"next-env.d.ts"
 	],
-	"words": ["cmdk", "Embla", "logomark", "nums", "shadcn", "vaul"],
-	"files": ["**/*.{ts,tsx,js,jsx,md,json,css}"]
+	"words": [
+		"cmdk",
+		"DMMF",
+		"Embla",
+		"logomark",
+		"nums",
+		"shadcn",
+		"vaul",
+		"vercel"
+	],
+	"files": [
+		"**/*.ts",
+		"**/*.tsx",
+		"**/*.js",
+		"**/*.jsx",
+		"**/*.mjs",
+		"**/*.cjs",
+		"**/*.css",
+		"**/*.md",
+		"**/*.json",
+		"**/*.prisma",
+		"**/*.yml",
+		"**/*.yaml",
+		"**/*.toml"
+	]
 }

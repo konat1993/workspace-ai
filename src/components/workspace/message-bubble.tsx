@@ -10,12 +10,16 @@ type MessageBubbleProps = {
 
 function statusLabel(status: MessageStatus): string {
     switch (status) {
-        case "streaming":
+        case "STREAMING":
             return "Streaming…";
-        case "done":
+        case "DONE":
             return "Done";
-        case "error":
+        case "ERROR":
             return "Error";
+        case "STOPPED":
+            return "Stopped";
+        case "UNKNOWN":
+            return "Unknown";
         default:
             return status;
     }
@@ -25,11 +29,11 @@ function statusVariant(
     status: MessageStatus,
 ): "default" | "secondary" | "destructive" | "outline" {
     switch (status) {
-        case "streaming":
+        case "STREAMING":
             return "secondary";
-        case "done":
+        case "DONE":
             return "default";
-        case "error":
+        case "ERROR":
             return "destructive";
         default:
             return "outline";
@@ -37,7 +41,7 @@ function statusVariant(
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
-    const isUser = message.role === "user";
+    const isUser = message.role === "USER";
 
     return (
         <div
@@ -58,19 +62,19 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     <p className="whitespace-pre-wrap wrap-break-word">
                         {message.content}
                     </p>
-                ) : message.status === "streaming" ? (
+                ) : message.status === "STREAMING" ? (
                     <span className="inline-flex items-center gap-1">
                         <span className="size-1.5 animate-pulse rounded-full bg-current" />
                         <span className="text-muted-foreground">Thinking…</span>
                     </span>
                 ) : null}
-                {message.role === "assistant" && (
+                {message.role === "ASSISTANT" && (
                     <div className="mt-2 flex justify-end">
                         <Badge
                             variant={statusVariant(message.status)}
                             className="text-[10px] font-normal"
                         >
-                            {message.status === "streaming" && (
+                            {message.status === "STREAMING" && (
                                 <span className="mr-1 size-1 animate-pulse rounded-full bg-current" />
                             )}
                             {statusLabel(message.status)}

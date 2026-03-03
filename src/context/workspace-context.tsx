@@ -5,20 +5,25 @@ import {
     type ReactNode,
     useCallback,
     useContext,
+    useEffect,
     useMemo,
     useReducer,
 } from "react";
+import { useWorkspaceVariant } from "@/hooks/use-workspace-variant";
 import type {
     Message,
     WorkspaceAction,
     WorkspaceState,
+    WorkspaceVariant,
 } from "@/types/workspace";
 
+// Start with messagesLoading true so workspace pages (e.g. /integrated-ai) show skeleton on first paint instead of flashing empty state
 const initialState: WorkspaceState = {
     document: "",
     selectedText: null,
     messages: [],
     isStreaming: false,
+    messagesLoading: true,
 };
 
 function workspaceReducer(
@@ -32,6 +37,14 @@ function workspaceReducer(
             return { ...state, selectedText: action.payload };
         case "ADD_MESSAGE":
             return { ...state, messages: [...state.messages, action.payload] };
+        case "SET_MESSAGES":
+            return {
+                ...state,
+                messages: action.payload,
+                messagesLoading: false,
+            };
+        case "SET_MESSAGES_LOADING":
+            return { ...state, messagesLoading: action.payload };
         case "UPDATE_MESSAGE": {
             const { id, content, status } = action.payload;
             return {
@@ -68,6 +81,7 @@ function workspaceReducer(
 
 type WorkspaceContextValue = WorkspaceState & {
     dispatch: React.Dispatch<WorkspaceAction>;
+    workspaceVariant: WorkspaceVariant | undefined;
     setDocument: (document: string) => void;
     setSelectedText: (text: string | null) => void;
     addMessage: (message: Message) => void;
@@ -85,6 +99,34 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(workspaceReducer, initialState);
+    const workspaceVariant = useWorkspaceVariant();
+
+    useEffect(() => {
+        if (!workspaceVariant) {
+            dispatch({ type: "SET_MESSAGES_LOADING", payload: false });
+            return;
+        }
+        dispatch({ type: "SET_MESSAGES_LOADING", payload: true });
+        const variantParam = workspaceVariant.toLowerCase();
+        const ac = new AbortController();
+        fetch(`/api/workspace-messages?variant=${variantParam}`, {
+            signal: ac.signal,
+        })
+            .then((res) => (res.ok ? res.json() : []))
+            .then((data: Message[]) => {
+                if (ac.signal.aborted) return;
+                dispatch({
+                    type: "SET_MESSAGES",
+                    payload: Array.isArray(data) ? data : [],
+                });
+            })
+            .catch(() => {
+                if (!ac.signal.aborted) {
+                    dispatch({ type: "SET_MESSAGES", payload: [] });
+                }
+            });
+        return () => ac.abort();
+    }, [workspaceVariant]);
 
     const setDocument = useCallback((document: string) => {
         dispatch({ type: "SET_DOCUMENT", payload: document });
@@ -131,6 +173,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         () => ({
             ...state,
             dispatch,
+            workspaceVariant,
             setDocument,
             setSelectedText,
             addMessage,
@@ -142,6 +185,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         }),
         [
             state,
+            workspaceVariant,
             setDocument,
             setSelectedText,
             addMessage,

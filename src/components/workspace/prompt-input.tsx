@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/context/workspace-context";
 import { useAIStream } from "@/hooks/use-ai-stream";
+import { useWorkspaceVariant } from "@/hooks/use-workspace-variant";
 
 export function PromptInput() {
     const [prompt, setPrompt] = useState("");
     const { sendMessage, stop, regenerate, isStreaming, canRegenerate } =
         useAIStream();
     const { selectedText, document } = useWorkspace();
+    const workspaceVariant = useWorkspaceVariant();
 
     const handleSubmit = useCallback(
         (e: React.SubmitEvent<HTMLFormElement>) => {
             e.preventDefault();
-            if (!prompt.trim() || isStreaming) return;
-            sendMessage(prompt);
+            if (!prompt.trim() || isStreaming || !workspaceVariant) return;
+            sendMessage({ userPrompt: prompt, workspaceVariant });
             setPrompt("");
         },
-        [prompt, isStreaming, sendMessage],
+        [prompt, isStreaming, sendMessage, workspaceVariant],
     );
 
     const isEmptyDoc = useMemo(() => {
@@ -59,13 +61,13 @@ export function PromptInput() {
                     </Button>
                 )}
             </form>
-            {canRegenerate && (
+            {canRegenerate && workspaceVariant && (
                 <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="self-start"
-                    onClick={regenerate}
+                    onClick={() => regenerate({ workspaceVariant })}
                 >
                     <RefreshCw className="mr-1.5 size-3.5" />
                     Regenerate last response

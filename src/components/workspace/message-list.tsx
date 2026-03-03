@@ -1,13 +1,32 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWorkspace } from "@/context/workspace-context";
 import { MessageBubble } from "./message-bubble";
 
-export function MessageList() {
-    const { messages } = useWorkspace();
+function ChatLoadingSkeleton() {
+    return (
+        <div className="flex flex-col gap-4 p-4" aria-busy="true">
+            <div className="flex justify-end">
+                <div className="h-10 w-3/4 max-w-sm rounded-lg bg-muted animate-pulse" />
+            </div>
+            <div className="flex justify-start">
+                <div className="h-16 w-4/5 max-w-md rounded-lg bg-muted animate-pulse" />
+            </div>
+            <div className="flex justify-center py-2">
+                <Loader2
+                    className="size-5 animate-spin text-muted-foreground"
+                    aria-hidden
+                />
+            </div>
+        </div>
+    );
+}
 
+export function MessageList() {
+    const { messages, messagesLoading } = useWorkspace();
     const bottomRef = useRef<HTMLDivElement>(null);
 
     // Scroll to bottom when messages or streaming content changes
@@ -15,6 +34,14 @@ export function MessageList() {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    if (messagesLoading) {
+        return (
+            <ScrollArea className="h-full w-full *:*:first:block!">
+                <ChatLoadingSkeleton />
+            </ScrollArea>
+        );
+    }
 
     return (
         <ScrollArea className="h-full w-full *:*:first:block!">
