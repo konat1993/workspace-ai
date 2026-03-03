@@ -1,10 +1,9 @@
 "use client";
 
 import { RefreshCw, Send, Square } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useWorkspace } from "@/context/workspace-context";
 import { useAIStream } from "@/hooks/use-ai-stream";
 import { useWorkspaceVariant } from "@/hooks/use-workspace-variant";
 
@@ -12,7 +11,6 @@ export function PromptInput() {
     const [prompt, setPrompt] = useState("");
     const { sendMessage, stop, regenerate, isStreaming, canRegenerate } =
         useAIStream();
-    const { selectedText, document } = useWorkspace();
     const workspaceVariant = useWorkspaceVariant();
 
     const handleSubmit = useCallback(
@@ -24,10 +22,6 @@ export function PromptInput() {
         },
         [prompt, isStreaming, sendMessage, workspaceVariant],
     );
-
-    const isEmptyDoc = useMemo(() => {
-        return !selectedText && document.trim().length === 0;
-    }, [document, selectedText]);
 
     return (
         <div className="flex flex-col gap-2 border-t p-4">
@@ -54,7 +48,7 @@ export function PromptInput() {
                     <Button
                         type="submit"
                         size="icon"
-                        disabled={!prompt.trim() || isEmptyDoc}
+                        disabled={!prompt.trim()}
                         aria-label="Send"
                     >
                         <Send className="size-4" />

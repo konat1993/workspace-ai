@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+# Postgres for this project only. Port 5433 avoids conflict with local Postgres on 5432.
+# Start: docker compose up -d. Use DATABASE_URL with port 5433 (see .env.example).
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ai-powered-app-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
