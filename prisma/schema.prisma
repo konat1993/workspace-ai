@@ -32,11 +32,24 @@ enum WorkspaceVariant {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  role      Role
-  content   String
-  status    Status
+  id               String         @id @default(uuid())
+  model            String?        @default("gpt-4o-mini")
+  role             Role
+  content          String
+  status           Status
   workspaceVariant WorkspaceVariant
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  systemPromptId   String?
+  systemPrompt    SystemPrompt?  @relation(fields: [systemPromptId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model SystemPrompt {
+  id         String    @id @default(uuid())
+  model      String?   @default("gpt-4o-mini")
+  content    String
+  contentHash String   @unique // SHA-256 hex for deduplication without comparing long text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  messages   Message[]
 }

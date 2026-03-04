@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWorkspace } from "@/context/workspace-context";
-import { MessageBubble } from "./message-bubble";
+import { MessageBubble } from "../../../message-bubble";
 
 function ChatLoadingSkeleton() {
     return (
@@ -26,7 +26,7 @@ function ChatLoadingSkeleton() {
 }
 
 export function MessageList() {
-    const { messages, messagesLoading } = useWorkspace();
+    const { messages, messagesLoading, messagesError } = useWorkspace();
     const bottomRef = useRef<HTMLDivElement>(null);
 
     // Scroll to bottom when messages or streaming content changes
@@ -35,7 +35,10 @@ export function MessageList() {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    if (messagesLoading) {
+    // Only show skeleton on initial load (no messages yet). When refetching after
+    // stream ends, keep showing the list so the scroll container isn't unmounted
+    // and scroll position is preserved.
+    if (messagesLoading && messages.length === 0) {
         return (
             <ScrollArea className="h-full w-full *:*:first:block!">
                 <ChatLoadingSkeleton />
@@ -46,7 +49,15 @@ export function MessageList() {
     return (
         <ScrollArea className="h-full w-full *:*:first:block!">
             <div className="flex flex-col gap-4 p-4">
-                {messages.length === 0 ? (
+                {/* TODO: Implement toast notification for errors */}
+                {messagesError ? (
+                    <p
+                        className="text-destructive text-center text-sm"
+                        role="alert"
+                    >
+                        {messagesError}
+                    </p>
+                ) : messages.length === 0 ? (
                     <p className="text-muted-foreground text-center text-sm">
                         Ask a question about your document. Select text to focus
                         the AI on a specific fragment.

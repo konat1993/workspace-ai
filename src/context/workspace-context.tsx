@@ -10,12 +10,20 @@ import {
     useReducer,
 } from "react";
 import { useWorkspaceVariant } from "@/hooks/use-workspace-variant";
+import { fetchWorkspaceMessages } from "@/lib/fetch-workspace-messages";
 import type {
     Message,
     WorkspaceAction,
     WorkspaceState,
     WorkspaceVariant,
 } from "@/types/workspace";
+
+const AI_MODEL_STORAGE_KEY = "workspace-ai-model";
+
+function getStoredAiModel(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(AI_MODEL_STORAGE_KEY);
+}
 
 // Start with messagesLoading true so workspace pages (e.g. /integrated-ai) show skeleton on first paint instead of flashing empty state
 const initialState: WorkspaceState = {
@@ -24,6 +32,8 @@ const initialState: WorkspaceState = {
     messages: [],
     isStreaming: false,
     messagesLoading: true,
+    messagesError: null,
+    aiModel: "gpt-4o-mini",
 };
 
 function workspaceReducer(
@@ -45,6 +55,8 @@ function workspaceReducer(
             };
         case "SET_MESSAGES_LOADING":
             return { ...state, messagesLoading: action.payload };
+        case "SET_MESSAGES_ERROR":
+            return { ...state, messagesError: action.payload };
         case "UPDATE_MESSAGE": {
             const { id, content, status } = action.payload;
             return {
@@ -60,6 +72,8 @@ function workspaceReducer(
                 ),
             };
         }
+        case "SET_AI_MODEL":
+            return { ...state, aiModel: action.payload };
         case "REPLACE_LAST_ASSISTANT":
             return {
                 ...state,
@@ -93,40 +107,31 @@ type WorkspaceContextValue = WorkspaceState & {
     removeLastUserAndAssistant: () => void;
     setStreaming: (isStreaming: boolean) => void;
     clearMessages: () => void;
+    refetchMessages: () => void;
+    setAiModel: (aiModel: string) => void;
 };
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-    const [state, dispatch] = useReducer(workspaceReducer, initialState);
-    const workspaceVariant = useWorkspaceVariant();
+function getInitialWorkspaceState(): WorkspaceState {
+    const stored = getStoredAiModel();
+    return {
+        ...initialState,
+        aiModel: stored ?? initialState.aiModel,
+    };
+}
 
-    useEffect(() => {
-        if (!workspaceVariant) {
-            dispatch({ type: "SET_MESSAGES_LOADING", payload: false });
-            return;
-        }
-        dispatch({ type: "SET_MESSAGES_LOADING", payload: true });
-        const variantParam = workspaceVariant.toLowerCase();
-        const ac = new AbortController();
-        fetch(`/api/workspace-messages?variant=${variantParam}`, {
-            signal: ac.signal,
-        })
-            .then((res) => (res.ok ? res.json() : []))
-            .then((data: Message[]) => {
-                if (ac.signal.aborted) return;
-                dispatch({
-                    type: "SET_MESSAGES",
-                    payload: Array.isArray(data) ? data : [],
-                });
-            })
-            .catch(() => {
-                if (!ac.signal.aborted) {
-                    dispatch({ type: "SET_MESSAGES", payload: [] });
-                }
-            });
-        return () => ac.abort();
-    }, [workspaceVariant]);
+export function WorkspaceProvider({ children }: { children: ReactNode }) {
+    const [state, dispatch] = useReducer(
+        workspaceReducer,
+        undefined,
+        getInitialWorkspaceState,
+    );
+    const workspaceVariant = useWorkspaceVariant();
+    useEffect(
+        () => fetchWorkspaceMessages(dispatch, workspaceVariant),
+        [workspaceVariant],
+    );
 
     const setDocument = useCallback((document: string) => {
         dispatch({ type: "SET_DOCUMENT", payload: document });
@@ -153,6 +158,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         [],
     );
 
+    const setAiModel = useCallback((aiModel: string) => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem(AI_MODEL_STORAGE_KEY, aiModel);
+        }
+        dispatch({ type: "SET_AI_MODEL", payload: aiModel });
+    }, []);
+
     const replaceLastAssistant = useCallback((message: Message) => {
         dispatch({ type: "REPLACE_LAST_ASSISTANT", payload: message });
     }, []);
@@ -169,6 +181,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "CLEAR_MESSAGES" });
     }, []);
 
+    const refetchMessages = useCallback(() => {
+        if (!workspaceVariant) return;
+        dispatch({ type: "SET_MESSAGES_LOADING", payload: true });
+        fetchWorkspaceMessages(dispatch, workspaceVariant);
+    }, [workspaceVariant]);
+
     const value = useMemo<WorkspaceContextValue>(
         () => ({
             ...state,
@@ -178,10 +196,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             setSelectedText,
             addMessage,
             updateMessage,
+            setAiModel,
             replaceLastAssistant,
             removeLastUserAndAssistant,
             setStreaming,
             clearMessages,
+            refetchMessages,
         }),
         [
             state,
@@ -190,10 +210,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             setSelectedText,
             addMessage,
             updateMessage,
+            setAiModel,
             replaceLastAssistant,
             removeLastUserAndAssistant,
             setStreaming,
             clearMessages,
+            refetchMessages,
         ],
     );
 

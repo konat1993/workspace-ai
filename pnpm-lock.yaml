@@ -21,7 +21,7 @@ importers:
         specifier: ^7.4.2
         version: 7.4.2(prisma@7.4.2(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)
       '@tanstack/react-query':
-        specifier: ^5.90.21
+        specifier: ^5.62.0
         version: 5.90.21(react@19.2.3)
       class-variance-authority:
         specifier: ^0.7.1

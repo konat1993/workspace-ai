@@ -8,7 +8,7 @@ function generateId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-const INTEGRATED_AI_API = "/api/integrated-ai";
+const INTEGRATED_AI_API = "/api/integrated-ai/messages";
 
 export function useAIStream() {
     const {
@@ -20,6 +20,8 @@ export function useAIStream() {
         updateMessage,
         removeLastUserAndAssistant,
         setStreaming,
+        refetchMessages,
+        aiModel: selectedAiModel,
     } = useWorkspace();
 
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -35,9 +37,13 @@ export function useAIStream() {
         async ({
             userPrompt,
             workspaceVariant: variant,
+            regenerate = false,
+            systemIdByPrompt = "",
         }: {
             userPrompt: string;
             workspaceVariant: WorkspaceVariant;
+            regenerate?: boolean;
+            systemIdByPrompt?: string;
         }) => {
             const trimmedPrompt = userPrompt.trim();
             if (!trimmedPrompt || isStreaming) return;
@@ -48,6 +54,8 @@ export function useAIStream() {
                 content: trimmedPrompt,
                 status: "UNKNOWN",
                 workspaceVariant: variant,
+                model: null,
+                systemPromptId: null,
             };
             addMessage(userMessage);
 
@@ -58,6 +66,8 @@ export function useAIStream() {
                 content: "",
                 status: "STREAMING",
                 workspaceVariant: variant,
+                model: selectedAiModel ?? null,
+                systemPromptId: null,
             };
             addMessage(assistantMessage);
             setStreaming(true);
@@ -75,6 +85,9 @@ export function useAIStream() {
                         selectedText: selectedText || undefined,
                         userPrompt: trimmedPrompt,
                         workspaceVariant: variant,
+                        regenerate: regenerate,
+                        systemIdByPrompt,
+                        selectedAiModel,
                     }),
                     signal: controller.signal,
                 });
@@ -104,6 +117,7 @@ export function useAIStream() {
                 }
 
                 updateMessage(assistantId, { content, status: "DONE" });
+                refetchMessages();
             } catch (err) {
                 const isAbort =
                     err instanceof Error && err.name === "AbortError";
@@ -125,6 +139,8 @@ export function useAIStream() {
             addMessage,
             updateMessage,
             setStreaming,
+            refetchMessages,
+            selectedAiModel,
         ],
     );
 
@@ -139,9 +155,13 @@ export function useAIStream() {
             const lastUser = messages[messages.length - 2];
             if (lastUser.role !== "USER") return;
             removeLastUserAndAssistant();
+
             sendMessage({
                 userPrompt: lastUser.content,
                 workspaceVariant: variant,
+                regenerate: true,
+                // Coerce null to undefined for optional API param
+                systemIdByPrompt: lastUser.systemPromptId ?? undefined,
             });
         },
         [messages, isStreaming, removeLastUserAndAssistant, sendMessage],
