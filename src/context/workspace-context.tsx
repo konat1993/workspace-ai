@@ -1,21 +1,19 @@
 "use client";
 
+import type { Model } from "openai/resources/models.mjs";
 import {
     createContext,
     type ReactNode,
     useCallback,
     useContext,
-    useEffect,
     useMemo,
     useReducer,
 } from "react";
-import { useWorkspaceVariant } from "@/hooks/use-workspace-variant";
 import { fetchWorkspaceMessages } from "@/lib/fetch-workspace-messages";
 import type {
     Message,
     WorkspaceAction,
     WorkspaceState,
-    WorkspaceVariant,
 } from "@/types/workspace";
 
 const AI_MODEL_STORAGE_KEY = "workspace-ai-model";
@@ -94,8 +92,9 @@ function workspaceReducer(
 }
 
 type WorkspaceContextValue = WorkspaceState & {
+    /** AI models list from server (passed from layout). */
+    aiModels: Model[];
     dispatch: React.Dispatch<WorkspaceAction>;
-    workspaceVariant: WorkspaceVariant | undefined;
     setDocument: (document: string) => void;
     setSelectedText: (text: string | null) => void;
     addMessage: (message: Message) => void;
@@ -113,24 +112,28 @@ type WorkspaceContextValue = WorkspaceState & {
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
-function getInitialWorkspaceState(): WorkspaceState {
+function getInitialWorkspaceState(initialMessages?: Message[]): WorkspaceState {
     const stored = getStoredAiModel();
     return {
         ...initialState,
+        messages: initialMessages ?? [],
+        messagesLoading: initialMessages === undefined,
         aiModel: stored ?? initialState.aiModel,
     };
 }
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
+export function WorkspaceProvider({
+    children,
+    initialModels = [],
+    initialMessages,
+}: {
+    children: ReactNode;
+    initialModels: Model[];
+    initialMessages: Message[];
+}) {
     const [state, dispatch] = useReducer(
         workspaceReducer,
-        undefined,
-        getInitialWorkspaceState,
-    );
-    const workspaceVariant = useWorkspaceVariant();
-    useEffect(
-        () => fetchWorkspaceMessages(dispatch, workspaceVariant),
-        [workspaceVariant],
+        getInitialWorkspaceState(initialMessages),
     );
 
     const setDocument = useCallback((document: string) => {
@@ -182,16 +185,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const refetchMessages = useCallback(() => {
-        if (!workspaceVariant) return;
         dispatch({ type: "SET_MESSAGES_LOADING", payload: true });
-        fetchWorkspaceMessages(dispatch, workspaceVariant);
-    }, [workspaceVariant]);
+        fetchWorkspaceMessages(dispatch);
+    }, []);
 
     const value = useMemo<WorkspaceContextValue>(
         () => ({
             ...state,
+            aiModels: initialModels,
             dispatch,
-            workspaceVariant,
             setDocument,
             setSelectedText,
             addMessage,
@@ -205,7 +207,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         }),
         [
             state,
-            workspaceVariant,
+            initialModels,
             setDocument,
             setSelectedText,
             addMessage,

@@ -7,10 +7,9 @@ import {
     deleteLastUserAndAssistantFromDb,
     getChatHistory,
 } from "@/lib/workspace-messages";
-import { parseWorkspaceVariant } from "@/lib/workspace-variant";
-import type { MessageRole, WorkspaceVariant } from "@/types/workspace";
+import type { MessageRole } from "@/types/workspace";
 
-const SUPPORTED_VARIANT: WorkspaceVariant = "INTEGRATED";
+export const dynamic = "force-dynamic";
 
 // Fail fast with clear error instead of opaque SDK error when key is missing; returns null when key missing so caller can return error response
 function getOpenAIClient(): OpenAI | null {
@@ -24,7 +23,6 @@ export async function POST(request: NextRequest) {
         document?: string;
         selectedText?: string;
         userPrompt?: string;
-        workspaceVariant?: WorkspaceVariant;
         regenerate?: boolean;
         systemIdByPrompt?: string;
         selectedAiModel?: string;
@@ -43,21 +41,10 @@ export async function POST(request: NextRequest) {
         document = "",
         selectedText,
         userPrompt,
-        regenerate = false, // remove last user and assistant and regenerate
-        workspaceVariant,
+        regenerate = false,
         systemIdByPrompt,
         selectedAiModel,
     } = body;
-
-    const variant = parseWorkspaceVariant(workspaceVariant);
-    if (variant !== SUPPORTED_VARIANT) {
-        return new Response(
-            JSON.stringify({
-                error: `workspaceVariant is required and must be '${SUPPORTED_VARIANT.toLowerCase()}' for this endpoint`,
-            }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
-        );
-    }
 
     if (!userPrompt || typeof userPrompt !== "string") {
         return new Response(
@@ -93,7 +80,7 @@ export async function POST(request: NextRequest) {
             systemByPrompt = systemByUserPrompt?.content ?? "";
         }
     } else {
-        await addMessageToDb(variant, {
+        await addMessageToDb({
             role: "USER",
             content: userPrompt,
             status: "UNKNOWN",
@@ -101,7 +88,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const chatHistory = await getChatHistory(variant);
+    const chatHistory = await getChatHistory();
 
     const encoder = new TextEncoder();
 
@@ -155,7 +142,7 @@ export async function POST(request: NextRequest) {
                     totalContent += content;
                     controller.enqueue(encoder.encode(content));
                 }
-                await addMessageToDb(variant, {
+                await addMessageToDb({
                     role: "ASSISTANT",
                     content: totalContent,
                     status: "DONE",
@@ -165,7 +152,7 @@ export async function POST(request: NextRequest) {
             } catch (err) {
                 const message =
                     err instanceof Error ? err.message : String(err);
-                await addMessageToDb(variant, {
+                await addMessageToDb({
                     role: "ASSISTANT",
                     content: `Error: ${message}`,
                     status: "ERROR",

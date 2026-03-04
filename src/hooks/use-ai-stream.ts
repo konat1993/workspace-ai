@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { useWorkspace } from "@/context/workspace-context";
-import type { Message, WorkspaceVariant } from "@/types/workspace";
+import type { Message } from "@/types/workspace";
 
 function generateId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -36,12 +36,10 @@ export function useAIStream() {
     const sendMessage = useCallback(
         async ({
             userPrompt,
-            workspaceVariant: variant,
             regenerate = false,
             systemIdByPrompt = "",
         }: {
             userPrompt: string;
-            workspaceVariant: WorkspaceVariant;
             regenerate?: boolean;
             systemIdByPrompt?: string;
         }) => {
@@ -53,7 +51,6 @@ export function useAIStream() {
                 role: "USER",
                 content: trimmedPrompt,
                 status: "UNKNOWN",
-                workspaceVariant: variant,
                 model: null,
                 systemPromptId: null,
             };
@@ -65,7 +62,6 @@ export function useAIStream() {
                 role: "ASSISTANT",
                 content: "",
                 status: "STREAMING",
-                workspaceVariant: variant,
                 model: selectedAiModel ?? null,
                 systemPromptId: null,
             };
@@ -84,8 +80,7 @@ export function useAIStream() {
                         document,
                         selectedText: selectedText || undefined,
                         userPrompt: trimmedPrompt,
-                        workspaceVariant: variant,
-                        regenerate: regenerate,
+                        regenerate,
                         systemIdByPrompt,
                         selectedAiModel,
                     }),
@@ -145,27 +140,18 @@ export function useAIStream() {
     );
 
     /** Re-run last user message and replace last assistant reply */
-    const regenerate = useCallback(
-        ({
-            workspaceVariant: variant,
-        }: {
-            workspaceVariant: WorkspaceVariant;
-        }) => {
-            if (messages.length < 2 || isStreaming) return;
-            const lastUser = messages[messages.length - 2];
-            if (lastUser.role !== "USER") return;
-            removeLastUserAndAssistant();
+    const regenerate = useCallback(() => {
+        if (messages.length < 2 || isStreaming) return;
+        const lastUser = messages[messages.length - 2];
+        if (lastUser.role !== "USER") return;
+        removeLastUserAndAssistant();
 
-            sendMessage({
-                userPrompt: lastUser.content,
-                workspaceVariant: variant,
-                regenerate: true,
-                // Coerce null to undefined for optional API param
-                systemIdByPrompt: lastUser.systemPromptId ?? undefined,
-            });
-        },
-        [messages, isStreaming, removeLastUserAndAssistant, sendMessage],
-    );
+        sendMessage({
+            userPrompt: lastUser.content,
+            regenerate: true,
+            systemIdByPrompt: lastUser.systemPromptId ?? undefined,
+        });
+    }, [messages, isStreaming, removeLastUserAndAssistant, sendMessage]);
 
     return {
         sendMessage,

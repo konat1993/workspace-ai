@@ -1,26 +1,15 @@
 import type { Dispatch } from "react";
-import type {
-    Message,
-    WorkspaceAction,
-    WorkspaceVariant,
-} from "@/types/workspace";
+import type { Message, WorkspaceAction } from "@/types/workspace";
 
 const WORKSPACE_MESSAGES_API = "/api/workspace-messages";
 
 export function fetchWorkspaceMessages(
     dispatch: Dispatch<WorkspaceAction>,
-    workspaceVariant: WorkspaceVariant | undefined,
 ): () => void {
-    if (!workspaceVariant) {
-        dispatch({ type: "SET_MESSAGES_LOADING", payload: false });
-        dispatch({ type: "SET_MESSAGES_ERROR", payload: null });
-        return () => {};
-    }
     dispatch({ type: "SET_MESSAGES_LOADING", payload: true });
     dispatch({ type: "SET_MESSAGES_ERROR", payload: null });
-    const variantParam = workspaceVariant.toLowerCase();
     const ac = new AbortController();
-    fetch(`${WORKSPACE_MESSAGES_API}?variant=${variantParam}`, {
+    fetch(WORKSPACE_MESSAGES_API, {
         signal: ac.signal,
     })
         .then(async (res) => {

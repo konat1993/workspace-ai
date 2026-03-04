@@ -26,22 +26,16 @@ enum Status {
   STOPPED
 }
 
-enum WorkspaceVariant {
-  SIMULATED
-  INTEGRATED
-}
-
 model Message {
-  id               String         @id @default(uuid())
-  model            String?        @default("gpt-4o-mini")
-  role             Role
-  content          String
-  status           Status
-  workspaceVariant WorkspaceVariant
-  systemPromptId   String?
-  systemPrompt    SystemPrompt?  @relation(fields: [systemPromptId], references: [id])
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id             String        @id @default(uuid())
+  model          String?       @default("gpt-4o-mini")
+  role           Role
+  content        String
+  status         Status
+  systemPromptId String?
+  systemPrompt   SystemPrompt? @relation(fields: [systemPromptId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model SystemPrompt {

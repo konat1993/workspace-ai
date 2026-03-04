@@ -8,8 +8,6 @@ export type MessageStatus =
     | "STOPPED";
 export type MessageRole = "USER" | "ASSISTANT";
 
-export type WorkspaceVariant = "SIMULATED" | "INTEGRATED";
-
 export type Message = Omit<Prisma.MessageModel, "createdAt" | "updatedAt"> & {
     createdAt?: Date;
     updatedAt?: Date;
@@ -31,7 +29,6 @@ export type WorkspaceState = DocumentState & {
 };
 
 export type WorkspaceAction =
-    // | { type: "SET_VARIANT"; payload: WorkspaceVariant }
     | { type: "SET_DOCUMENT"; payload: string }
     | { type: "SET_SELECTED_TEXT"; payload: string | null }
     | { type: "ADD_MESSAGE"; payload: Message }

@@ -1,15 +1,11 @@
 import prisma from "@/lib/db";
-import type { Message, MessageRole, WorkspaceVariant } from "@/types/workspace";
-
-const variantToEnum = (variant: WorkspaceVariant): "SIMULATED" | "INTEGRATED" =>
-    variant;
+import type { Message, MessageRole } from "@/types/workspace";
 
 function toAppMessage(row: {
     id: string;
     role: MessageRole;
     content: string;
     status: Message["status"];
-    workspaceVariant: WorkspaceVariant;
     systemPromptId: string | null;
     model: string | null;
 }): Message {
@@ -18,25 +14,20 @@ function toAppMessage(row: {
         role: row.role,
         content: row.content,
         status: row.status,
-        workspaceVariant: row.workspaceVariant,
         systemPromptId: row.systemPromptId ?? null,
         model: row.model,
     };
 }
 
-export async function getChatHistory(
-    workspaceVariant: WorkspaceVariant,
-): Promise<Message[]> {
+export async function getChatHistory(): Promise<Message[]> {
     const rows = await prisma.message.findMany({
-        where: { workspaceVariant: variantToEnum(workspaceVariant) },
         orderBy: { createdAt: "asc" },
     });
     return rows.map(toAppMessage);
 }
 
 export async function addMessage(
-    workspaceVariant: WorkspaceVariant,
-    message: Omit<Message, "id" | "workspaceVariant" | "model"> & {
+    message: Omit<Message, "id" | "model"> & {
         id?: string;
         model?: string | null;
     },
@@ -46,7 +37,6 @@ export async function addMessage(
             role: message.role,
             content: message.content,
             status: message.status,
-            workspaceVariant: variantToEnum(workspaceVariant),
             systemPromptId: message.systemPromptId,
             model: message.role === "ASSISTANT" ? message.model : null,
         },
@@ -70,15 +60,6 @@ export async function updateMessage(
         })
         .catch(() => null);
     return updated ? toAppMessage(updated) : null;
-}
-
-export async function deleteMessagesByVariant(
-    workspaceVariant: WorkspaceVariant,
-): Promise<number> {
-    const result = await prisma.message.deleteMany({
-        where: { workspaceVariant: variantToEnum(workspaceVariant) },
-    });
-    return result.count;
 }
 
 export async function deleteLastUserAndAssistantFromDb(): Promise<number> {
