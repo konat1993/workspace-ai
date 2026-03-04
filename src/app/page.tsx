@@ -4,8 +4,10 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
     return (
-        <div className="flex flex-col gap-4 items-center justify-center h-screen">
-            <h1 className="text-4xl font-bold ">AI Document Workspace</h1>
+        <div className="flex flex-col gap-4 p-4 items-center justify-center h-screen">
+            <h1 className="text-4xl font-bold text-center">
+                AI Document Workspace
+            </h1>
             <div className="flex flex-col gap-2 text-center">
                 <p className="text-lg text-gray-500">
                     This is a workspace for AI document analysis and question

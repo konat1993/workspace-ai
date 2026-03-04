@@ -18,17 +18,25 @@ export default function IntegratedAILayout({
     const dataPromise = Promise.all([getAiModels(), getChatHistory()]);
 
     return (
-        <Suspense fallback={<IntegratedAILoading />}>
-            <Await promise={dataPromise}>
-                {([initialModels, initialMessages]) => (
-                    <WorkspaceProvider
-                        initialModels={initialModels}
-                        initialMessages={initialMessages}
-                    >
-                        <div className="min-h-dvh">{children}</div>
-                    </WorkspaceProvider>
-                )}
-            </Await>
-        </Suspense>
+        <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-0 flex flex-col">
+                <Suspense fallback={<IntegratedAILoading />}>
+                    <Await promise={dataPromise}>
+                        {([initialModels, initialMessages]) => (
+                            <div className="flex h-full flex-col">
+                                <WorkspaceProvider
+                                    initialModels={initialModels}
+                                    initialMessages={initialMessages}
+                                >
+                                    <div className="flex h-full flex-1 flex-col">
+                                        {children}
+                                    </div>
+                                </WorkspaceProvider>
+                            </div>
+                        )}
+                    </Await>
+                </Suspense>
+            </div>
+        </div>
     );
 }

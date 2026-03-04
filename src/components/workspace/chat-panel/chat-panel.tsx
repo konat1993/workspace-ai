@@ -11,7 +11,7 @@ export function ChatPanel() {
 
     return (
         <Card className="flex h-full flex-col overflow-hidden">
-            <CardHeader className="shrink-0 border-b py-3">
+            <CardHeader className="shrink-0 border-b py-0 md:py-3">
                 <CardTitle className="text-base font-medium">
                     Chat - Open AI
                 </CardTitle>

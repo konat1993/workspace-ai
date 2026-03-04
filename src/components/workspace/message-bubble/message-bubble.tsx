@@ -35,16 +35,19 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             >
                 <div
                     className={cn(
-                        "max-w-[85%] rounded-lg px-3 py-2 text-sm",
+                        "relative max-w-[85%] rounded-lg px-3 py-2 text-sm",
                         isUser
                             ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-foreground border border-border",
+                            : "bg-muted text-foreground border border-border pt-5",
                     )}
                 >
                     {!isUser && (
-                        <Badge className="text-xs text-muted-foreground bg-white border border-border mb-4">
-                            {message.model || aiModel}
-                        </Badge>
+                        <>
+                            {/* mb-4 removed: redundant with absolute positioning */}
+                            <Badge className="absolute -top-3 left-2 text-[10px] text-muted-foreground dark:text-gray-600 bg-white border border-border">
+                                {message.model || aiModel}
+                            </Badge>
+                        </>
                     )}
                     <MessageContent message={message} />
                     {message.role === "ASSISTANT" && (

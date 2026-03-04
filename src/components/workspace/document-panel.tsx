@@ -34,7 +34,7 @@ export function DocumentPanel() {
 
     return (
         <Card className="flex h-full flex-col overflow-hidden">
-            <CardHeader className="shrink-0 border-b py-3">
+            <CardHeader className="shrink-0 border-b py-0 md:py-3">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium">
                         Document
@@ -55,7 +55,7 @@ export function DocumentPanel() {
                     onMouseUp={handleSelect}
                     onKeyUp={handleSelect}
                     className={cn(
-                        "h-full min-h-[200px] resize-none font-mono text-sm",
+                        "h-full md:min-h-[200px] resize-none font-mono text-sm",
                         selectedText &&
                             "ring-2 ring-primary/30 ring-offset-2 ring-offset-background",
                     )}
