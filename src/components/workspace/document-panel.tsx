@@ -37,7 +37,7 @@ export function DocumentPanel() {
             <CardHeader className="shrink-0 border-b py-0 md:py-3">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium">
-                        Document
+                        Document/System
                     </CardTitle>
                     {selectedText !== null && selectedText !== "" && (
                         <Badge variant="secondary" className="text-xs">
