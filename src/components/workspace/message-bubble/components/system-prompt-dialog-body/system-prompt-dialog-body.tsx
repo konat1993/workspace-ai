@@ -1,5 +1,5 @@
-import { Check, Copy, Loader2, NotebookPen } from "lucide-react";
-import { useState } from "react";
+import { Loader2, NotebookPen } from "lucide-react";
+import { CopyButton } from "@/components/reusable/copy-button";
 import { Button } from "@/components/ui/button";
 import {
     DialogContent,
@@ -13,7 +13,6 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSystemPrompt } from "@/hooks/use-system-prompt";
-import { cn, safeClipboardWriteText } from "@/lib/utils";
 
 export const SystemPromptDialogBody = ({
     systemPromptId,
@@ -29,21 +28,6 @@ export const SystemPromptDialogBody = ({
     const { content, isLoading, error } = useSystemPrompt(systemPromptId, {
         enabled: open,
     });
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = () => {
-        // navigator.clipboard
-        //     .writeText(content)
-        //     .then(() => {
-        //         setCopied(true);
-        //         setTimeout(() => setCopied(false), 2000);
-        //     })
-        //     .catch(() => {});
-        safeClipboardWriteText(content, () => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
-    };
 
     const handlePutToDocument = () => {
         onPutToDocument(content);
@@ -71,21 +55,7 @@ export const SystemPromptDialogBody = ({
                     <div className="flex justify-end items-center gap-2 my-2">
                         <Tooltip delayDuration={100}>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    className={cn(copied && "cursor-auto")}
-                                    onClick={handleCopy}
-                                >
-                                    {copied ? (
-                                        <Check
-                                            className="size-4"
-                                            color="green"
-                                        />
-                                    ) : (
-                                        <Copy className="size-4" />
-                                    )}
-                                </Button>
+                                <CopyButton text={content} />
                             </TooltipTrigger>
                             <TooltipContent sideOffset={6}>
                                 <p>Copy system prompt</p>

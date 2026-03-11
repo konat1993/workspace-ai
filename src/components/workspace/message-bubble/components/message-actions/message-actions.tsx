@@ -1,4 +1,5 @@
 import { BookCopy, Copy, ScanText, Settings } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -41,7 +42,12 @@ export const UserMessageActions = ({
                 <DropdownMenuGroup>
                     <DropdownMenuItem
                         onClick={() => {
-                            safeClipboardWriteText(message.content);
+                            safeClipboardWriteText({
+                                text: message.content,
+                                onSuccess: () =>
+                                    toast.success("Copied to clipboard"),
+                                onError: () => toast.error("Failed to copy"),
+                            });
                         }}
                     >
                         Copy

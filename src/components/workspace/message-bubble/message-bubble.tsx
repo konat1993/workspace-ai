@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CopyButton } from "@/components/reusable/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/context/workspace-context";
 import { cn } from "@/lib/utils";
@@ -35,23 +36,21 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             >
                 <div
                     className={cn(
-                        "relative max-w-[85%] rounded-lg px-3 py-2 text-sm",
+                        "relative max-w-[85%] rounded-lg px-3 py-2 text-sm min-w-[70%]",
                         isUser
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-foreground border border-border pt-5",
                     )}
                 >
                     {!isUser && (
-                        <>
-                            {/* mb-4 removed: redundant with absolute positioning */}
-                            <Badge className="absolute -top-3 left-2 text-[10px] text-muted-foreground dark:text-gray-600 bg-white border border-border">
-                                {message.model || aiModel}
-                            </Badge>
-                        </>
+                        <Badge className="absolute -top-3 left-2 text-[10px] text-muted-foreground dark:text-gray-600 bg-white border border-border">
+                            {message.model || aiModel}
+                        </Badge>
                     )}
                     <MessageContent message={message} />
                     {message.role === "ASSISTANT" && (
-                        <div className="mt-4 flex justify-end gap-4">
+                        <div className="mt-4 flex justify-end gap-2">
+                            <CopyButton text={message.content} />
                             <MessageStatusBadge status={message.status} />
                         </div>
                     )}
