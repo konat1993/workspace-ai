@@ -10,7 +10,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
    - Starts Postgres in Docker (port 5433) if not already running.
    - Creates `.env` from `.env.example` if you don’t have one.
    - Installs dependencies, runs Prisma generate and migrations, then starts the Next.js dev server.
-4. **Optional:** Open `.env` and set `OPENAI_API_KEY` if you want to use the integrated AI (get a key from [OpenAI](https://platform.openai.com/api-keys)).
+4. **Optional:** Open `.env` and set `OPENAI_API_KEY` if you want to use AI chat (get a key from [OpenAI](https://platform.openai.com/api-keys)).
 5. **Open:** [http://localhost:3000](http://localhost:3000)
 
 Next time you can run `make dev` again, or `make dev-only` if Docker and DB are already running.
@@ -26,7 +26,7 @@ make dev
 This will:
 
 1. Start **Postgres** in Docker (if not already running).
-2. Create `.env` from `.env.example` if missing — **add your `OPENAI_API_KEY`** in `.env` for integrated AI.
+2. Create `.env` from `.env.example` if missing — **add your `OPENAI_API_KEY`** in `.env` for AI chat.
 3. Install dependencies, generate Prisma client, and apply existing DB migrations (`prisma migrate deploy`).
 4. Start the Next.js dev server.
 

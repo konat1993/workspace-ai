@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 const SYSTEM_PROMPT_QUERY_KEY = "system-prompt";
 
 async function fetchSystemPrompt(id: string): Promise<string> {
-    const response = await fetch(`/api/integrated-ai/system-prompts/${id}`);
+    const response = await fetch(`/api/ai-chat/system-prompts/${id}`);
     if (!response.ok) {
         throw new Error("Failed to load system prompt");
     }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function IntegratedAIError({
+export default function AiChatError({
     error,
     reset,
 }: {

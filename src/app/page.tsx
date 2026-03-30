@@ -18,13 +18,13 @@ export default function Home() {
                 </p>
             </div>
             <div className="flex gap-4 flex-col">
-                <Link href="/integrated-ai">
+                <Link href="/ai-chat">
                     <Card className="min-w-3xs p-4 hover:scale-105 hover:bg-accent transition-all">
                         <div className="flex gap-2 items-center justify-between">
                             <div className="flex flex-col gap-2">
-                                <CardTitle>Using AI integrated API</CardTitle>
+                                <CardTitle>AI Chat</CardTitle>
                                 <CardDescription>
-                                    E.g. OpenAI, Anthropic, etc.
+                                    OpenAI and other providers via the app API.
                                 </CardDescription>
                             </div>
                             <ArrowRightCircle className="size-6" />

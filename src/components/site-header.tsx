@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/", label: "Home" },
-    { href: "/integrated-ai", label: "Integrated AI" },
+    { href: "/ai-chat", label: "AI Chat" },
 ] as const;
 
 function Logo() {
@@ -76,9 +76,14 @@ export function SiteHeader() {
 
     return (
         <header className="sticky top-0 z-50 w-full shrink-0 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="flex h-14 items-center justify-between gap-4 px-4">
-                <Logo />
-                <nav className="flex items-center gap-1" aria-label="Main">
+            <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4">
+                <div className="flex min-w-0 justify-start">
+                    <Logo />
+                </div>
+                <nav
+                    className="flex items-center justify-center gap-1"
+                    aria-label="Main"
+                >
                     {navItems.map(({ href, label }) => (
                         <Button
                             key={href}
@@ -91,7 +96,9 @@ export function SiteHeader() {
                         </Button>
                     ))}
                 </nav>
-                <ThemeToggle />
+                <div className="flex justify-end">
+                    <ThemeToggle />
+                </div>
             </div>
         </header>
     );

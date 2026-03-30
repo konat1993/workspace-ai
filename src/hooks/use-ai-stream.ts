@@ -8,7 +8,7 @@ function generateId(): string {
     return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-const INTEGRATED_AI_API = "/api/integrated-ai/messages";
+const AI_CHAT_MESSAGES_API = "/api/ai-chat/messages";
 
 export function useAIStream() {
     const {
@@ -73,7 +73,7 @@ export function useAIStream() {
 
             let content = "";
             try {
-                const res = await fetch(INTEGRATED_AI_API, {
+                const res = await fetch(AI_CHAT_MESSAGES_API, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

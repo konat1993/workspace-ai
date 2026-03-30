@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 
-export default function IntegratedAILoading() {
+export default function AiChatLoading() {
     return (
         <div
             className="flex h-full items-center justify-center"

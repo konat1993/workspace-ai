@@ -23,7 +23,7 @@ function getStoredAiModel(): string | null {
     return localStorage.getItem(AI_MODEL_STORAGE_KEY);
 }
 
-// Start with messagesLoading true so workspace pages (e.g. /integrated-ai) show skeleton on first paint instead of flashing empty state
+// Start with messagesLoading true so workspace pages (e.g. /ai-chat) show skeleton on first paint instead of flashing empty state
 const initialState: WorkspaceState = {
     document: "",
     selectedText: null,
